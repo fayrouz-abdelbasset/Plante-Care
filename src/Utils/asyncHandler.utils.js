@@ -7,7 +7,7 @@ export const asyncHandler = (fn)=>{
          .status(err.status || 500)
          .json({message : "Internal Server Erro" ,
           error : err.message ,
-           stack:err.stack}); //مكان الايروز
+           stack:err.stack}); 
     })
   }
 
