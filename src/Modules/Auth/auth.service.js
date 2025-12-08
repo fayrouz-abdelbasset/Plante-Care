@@ -1,9 +1,8 @@
 
 
 import admin, { db } from "../../../config.js"; 
-import { asyncHandler } from "../../Utils/asyncHandler.utils.js";
-
- export const signup =asyncHandler( async(req , res)=>{
+import { successResponse } from "../../Utils/successResponse.utils.js";
+ export const signup =async(req , res , next)=>{
      const { email, password, name } = req.body;
 
   if (!email || !password) {
@@ -16,7 +15,7 @@ import { asyncHandler } from "../../Utils/asyncHandler.utils.js";
     .get();
 
      if(!checkUser.empty){
-       return res.status(409).json({message : "User Alredy Exists"});
+       return next(new Error("User Already Exists" ,{cause : 409}))
      }
 
 
@@ -30,17 +29,20 @@ import { asyncHandler } from "../../Utils/asyncHandler.utils.js";
     await db.collection("users").doc(user.uid).set({
       name,
       email,
+      password,
       createdAt: new Date(),
     });
 
+     return successResponse({res,statusCode:201
+      ,message:"User created Succesfully 🎉" ,
+      data: {user} })
+      };
 
-    return res.status(201).json({ message: "User created Succesfully 🎉", user});
-});
 
- export const login =asyncHandler( async(req , res)=>{
+
+
+ export const login = async(req , res ,next)=>{
      const { email, password } = req.body;
-
-
 
     const checkUser = await db.collection("users")
     .where("email", "==", email)
@@ -48,15 +50,16 @@ import { asyncHandler } from "../../Utils/asyncHandler.utils.js";
     .limit(1)
     .get();
 
-     if(!checkUser){
-       return res.status(404).json({message : "User Not Found👨‍🦯"});
+     if(checkUser.empty){
+             return next(new Error("User Not Found👨‍🦯" ,{cause : 404}))
      }
     
     
-
-    return res.status(200).json({ message: "User Logged in  Succesfully 🎉", checkUser});
- 
-});
+     return successResponse({res,statusCode:200
+      ,message:"User Logged in  Succesfully 🎉" ,
+      data: {checkUser} });
+      
+};
 
 
 
